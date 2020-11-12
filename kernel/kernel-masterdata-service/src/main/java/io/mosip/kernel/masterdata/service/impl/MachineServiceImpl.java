@@ -418,9 +418,10 @@ public class MachineServiceImpl implements MachineService {
 				if (filterValidator.validate(MachineTypeDto.class, Arrays.asList(filter))) {
 					List<Object[]> machineSpecs = machineRepository
 							.findMachineSpecByMachineTypeNameAndLangCode(typeName, langCode);
-					removeList.add(filter);
+					
 					addList.addAll(buildMachineSpecificationSearchFilter(machineSpecs));
 				}
+				removeList.add(filter);
 			}
 
 		}
@@ -452,8 +453,12 @@ public class MachineServiceImpl implements MachineService {
 			OptionalFilter optionalFilter = new OptionalFilter(addList);
 			OptionalFilter zoneOptionalFilter = new OptionalFilter(zoneFilter);
 			Page<Machine> page = null;
-			if (mapStatusList.isEmpty() || addList.isEmpty()) {
+			if(typeName!=null &&!typeName.isEmpty() && addList.isEmpty()) {
+				page = masterdataSearchHelper.nativeMachineQuerySearch(dto, typeName, zones, isAssigned);
+			}
+			else if (mapStatusList.isEmpty() || addList.isEmpty()) {
 				addList.addAll(mapStatusList);
+				optionalFilter = new OptionalFilter(addList);
 				page = masterdataSearchHelper.searchMasterdata(Machine.class, dto,
 						new OptionalFilter[] { optionalFilter, zoneOptionalFilter });
 			} else {
@@ -803,9 +808,9 @@ public class MachineServiceImpl implements MachineService {
 			
 			//machine name to be stored in lowercase
 			machineEntity.setName(machinePostReqDto.getName());
-			machineEntity.setPublicKey(machineUtil.getX509EncodedPublicKey(machinePostReqDto.getPublicKey()));
-			machineEntity.setKeyIndex(CryptoUtil.computeFingerPrint(CryptoUtil.decodeBase64(machineEntity.getPublicKey()), 
-					null).toLowerCase());
+
+			//update machine public key
+			updatePublicKey(machinePostReqDto.getPublicKey(), machinePostReqDto.getSignPublicKey(), machineEntity);
 
 			// creating a Machine
 			crtMachine = machineRepository.create(machineEntity);
@@ -930,7 +935,10 @@ public class MachineServiceImpl implements MachineService {
 
 				//machine name to be stored in lowercase
 				updMachineEntity.setName(machinePutReqDto.getName());
-				
+
+				//update machine public key
+				updatePublicKey(machinePutReqDto.getPublicKey(), machinePutReqDto.getSignPublicKey(), updMachineEntity);
+
 				// updating Machine
 				updMachine = machineRepository.update(updMachineEntity);
 
@@ -982,7 +990,7 @@ public class MachineServiceImpl implements MachineService {
 		
 
 		// given machine id is attached to regCenter center or not
-		if (!renMachine.getRegCenterId().isEmpty()) {
+		if (StringUtils.isNotEmpty(renMachine.getRegCenterId())) {
 			String regCenterId = renMachine.getRegCenterId();
 			List<RegistrationCenter> renRegistrationCenters = registrationCenterRepository
 					.findByRegIdAndIsDeletedFalseOrNull(regCenterId);
@@ -1029,5 +1037,19 @@ public class MachineServiceImpl implements MachineService {
 		registrationCenterHistoryEntity.setEffectivetimes(updRegistrationCenter.getUpdatedDateTime());
 		registrationCenterHistoryEntity.setCreatedDateTime(updRegistrationCenter.getUpdatedDateTime());
 		registrationCenterHistoryRepository.create(registrationCenterHistoryEntity);
+	}
+
+	private void updatePublicKey(String publicKey, String signPublicKey, Machine machineEntity) {
+		if(StringUtils.isNotEmpty(publicKey)) {
+			machineEntity.setPublicKey(machineUtil.getX509EncodedPublicKey(publicKey));
+			machineEntity.setKeyIndex(CryptoUtil.computeFingerPrint(CryptoUtil.decodeBase64(machineEntity.getPublicKey()),
+					null).toLowerCase());
+		}
+
+		if(StringUtils.isNotEmpty(signPublicKey)) {
+			machineEntity.setSignPublicKey(machineUtil.getX509EncodedPublicKey(signPublicKey));
+			machineEntity.setSignKeyIndex(CryptoUtil.computeFingerPrint(CryptoUtil.decodeBase64(machineEntity.getSignPublicKey()),
+					null).toLowerCase());
+		}
 	}
 }

@@ -47,14 +47,14 @@ public class CryptomanagerRequestDto {
 	/**
 	 * salt in BASE64 encoding for encrypt/decrypt
 	 */
-	
+
 	@NotBlank(message = "should not be null or empty")
 	private String salt;
 
 	/**
 	 * aad in BASE64 encoding for encrypt/decrypt
 	 */
-	
+
 	@NotBlank(message = "should not be null or empty")
 	private String aad;
 }

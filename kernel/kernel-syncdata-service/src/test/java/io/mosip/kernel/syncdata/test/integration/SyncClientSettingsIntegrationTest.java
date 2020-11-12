@@ -335,7 +335,7 @@ public class SyncClientSettingsIntegrationTest {
 		applications.add(new Application("101", "ENG", "MOSIP", "MOSIP"));
 		machines = new ArrayList<>();
 		machine = new Machine("1001", "Laptop", "9876427", "172.12.01.128", "21:21:21:12", "1001", "ENG", localdateTime,
-				encodedTPMPublicKey, keyIndex, "ZONE", "10002", null);
+				encodedTPMPublicKey, keyIndex, "ZONE", "10002", null, encodedTPMPublicKey, keyIndex);
 		machines.add(machine);
 		machineSpecification = new ArrayList<>();
 		machineSpecification.add(
@@ -762,6 +762,8 @@ public class SyncClientSettingsIntegrationTest {
 				Mockito.any())) .thenReturn(Arrays.asList(deviceSubTypeDPM));
 		
 		when(signatureUtil.sign(Mockito.anyString())).thenReturn(signResponse);
+
+		when(machineRepository.findByMachineIdAndIsActive(Mockito.anyString())).thenReturn(machines);
 	}
 	
 		
