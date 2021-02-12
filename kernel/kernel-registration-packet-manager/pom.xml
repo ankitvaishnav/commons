@@ -3,10 +3,10 @@
     <parent>
         <artifactId>kernel-parent</artifactId>
         <groupId>io.mosip.kernel</groupId>
-        <version>1.1.3</version>
+        <version>1.1.3_rs5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.1.3</version>
+    <version>1.1.3_rs5</version>
 
     <artifactId>kernel-registration-packet-manager</artifactId>
 
@@ -153,7 +153,7 @@
         <dependency>
             <groupId>io.mosip.kernel</groupId>
             <artifactId>kernel-cbeffutil-api</artifactId>
-            <version>1.1.3</version>
+            <version>1.1.3_rs5</version>
         </dependency>
         <dependency>
             <groupId>io.mosip.kernel</groupId>
